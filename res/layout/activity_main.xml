@@ -2,25 +2,32 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@layout/menubg_repeat">
+    android:background="@layout/menubg_repeat" >
 
     <TextView
+        android:id="@+id/textView1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
-        android:text="@string/hello_world"
         tools:context=".MainActivity" />
-    
-     <Button
+
+    <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@drawable/button" 
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
-        
-        android:text="@string/multiplayer_start"
+        android:background="@drawable/button"
         android:onClick="playMulti"
-        />
+        android:text="@string/multiplayer_start" />
+
+    <ImageView
+        android:id="@+id/imageView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="24dp"
+        android:background="@drawable/logo" />
 
 </RelativeLayout>
