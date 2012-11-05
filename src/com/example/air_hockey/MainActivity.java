@@ -29,4 +29,24 @@ public class MainActivity extends Activity {
         startActivity(intent);
     	
     }
+    
+    public void infoWindow(View view) {
+        
+    	Intent intent = new Intent(this, InfoWindow.class);
+        startActivity(intent);
+    	
+    }
+    
+    public void helpWindow(View view) {
+        
+    	Intent intent = new Intent(this, HelpWindow.class);
+        startActivity(intent);
+    	
+    }
+    
+    public void exitButton(View view) {
+        
+    	MainActivity.this.finish();
+    	
+    }
 }

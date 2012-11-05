@@ -6,6 +6,9 @@
     <string name="title_activity_main">Air-Hockey</string>
     <string name="multiplayer_start">Multiplayer</string>
     <string name="title_activity_play_multi">PlayMultiActivity</string>
+    <string name="title_activity_help_window">Help</string>
+    <string name="title_activity_info_window">About</string>
+    <string name="exit_button">Exit Game</string>
     <string name="edit_message">edit_message</string>
 
 </resources>

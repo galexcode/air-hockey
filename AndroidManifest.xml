@@ -27,6 +27,25 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.air_hockey.MainActivity" />
         </activity>
+        
+        <activity
+            android:name=".HelpWindow"
+            android:label="@string/title_activity_help_window"
+            android:theme="@android:style/Theme.Holo.Light.Dialog">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.air_hockey.MainActivity" />
+        </activity>
+        
+                
+        <activity
+            android:name=".InfoWindow"
+            android:label="@string/title_activity_info_window" 
+            android:theme="@android:style/Theme.Holo.Light.Dialog">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.air_hockey.MainActivity" />
+        </activity>
     </application>
 
 </manifest>
