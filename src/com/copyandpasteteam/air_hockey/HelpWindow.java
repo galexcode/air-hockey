@@ -1,4 +1,4 @@
-package com.example.air_hockey;
+package com.copyandpasteteam.air_hockey;
 
 import android.app.Activity;
 import android.os.Bundle;
