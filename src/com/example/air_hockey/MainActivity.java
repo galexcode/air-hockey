@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.view.Menu;
 import android.view.View;
 import android.widget.EditText;
+import com.copyandpasteteam.air_hockey.R;
 
 public class MainActivity extends Activity {
 
