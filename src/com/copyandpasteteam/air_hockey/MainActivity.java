@@ -10,20 +10,20 @@ import com.copyandpasteteam.air_hockey.R;
 
 public class MainActivity extends Activity {
 
-    private static final String EXTRA_MESSAGE = null;
-
 	@Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_main); 
     }
 
-    @Override
+	//Menu option
+   /* @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.activity_main, menu);
         return true;
-    }
-    
+    }*/ 
+	
+	//Metoda uruchamiaj¹ca aktywnoœæ - Gra Multiplayer
     public void playMulti(View view) {
         
     	Intent intent = new Intent(this, PlayMultiActivity.class);
@@ -31,6 +31,7 @@ public class MainActivity extends Activity {
     	
     }
     
+   //Metoda uruchamiaj¹ca aktywnoœæ - Info Window
     public void infoWindow(View view) {
         
     	Intent intent = new Intent(this, InfoWindow.class);
@@ -38,6 +39,7 @@ public class MainActivity extends Activity {
     	
     }
     
+    //Metoda uruchamiaj¹ca aktywnoœæ - Help Window
     public void helpWindow(View view) {
         
     	Intent intent = new Intent(this, HelpWindow.class);
@@ -45,6 +47,7 @@ public class MainActivity extends Activity {
     	
     }
     
+    //Metoda wywo³ywana po wciœniêciu przycisku Exit Game - powoduje zamkniecie aplikacji
     public void exitButton(View view) {
         
     	MainActivity.this.finish();

@@ -9,7 +9,7 @@ public class InfoWindow extends Activity {
     
     public void onCreate(Bundle savedInstanceState) {
     	  super.onCreate(savedInstanceState);
-          setContentView(R.layout.activity_infowindow);
+          setContentView(R.layout.activity_infowindow); //Uzycie layoutu z activity_infowindow.xml
 
 
     }

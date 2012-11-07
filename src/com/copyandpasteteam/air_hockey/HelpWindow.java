@@ -9,7 +9,7 @@ public class HelpWindow extends Activity {
     
     public void onCreate(Bundle savedInstanceState) {
     	  super.onCreate(savedInstanceState);
-          setContentView(R.layout.activity_helpwindow);
+          setContentView(R.layout.activity_helpwindow); //Uzycie layoutu z activity_helpwindow.xml
 
 
     }
