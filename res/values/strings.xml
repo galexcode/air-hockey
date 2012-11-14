@@ -9,6 +9,7 @@
     <string name="title_activity_info_window">About</string>
     <string name="exit_button">Exit Game</string>
     <string name="edit_message">edit_message</string>
+    <string name="close">Close</string>
     
     <string name="info_window_content">Lorem ipsum dolor sit amet, consectetur 
         adipiscing elit. Quisque consectetur ornare accumsan. Duis velit libero, 
