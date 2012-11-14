@@ -39,6 +39,7 @@ public class MainActivity extends Activity {
     	
     }
     
+
     //Metoda uruchamiaj¹ca aktywnoœæ - Help Window
     public void helpWindow(View view) {
         
