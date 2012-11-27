@@ -1,6 +1,8 @@
 
 package com.copyandpasteteam.air_hockey;
 
+import javax.microedition.khronos.opengles.GL10;
+
 import org.andengine.engine.Engine;
 import org.andengine.engine.camera.Camera;
 import org.andengine.engine.handler.IUpdateHandler;
@@ -14,6 +16,10 @@ import org.andengine.entity.scene.IOnSceneTouchListener;
 import org.andengine.entity.scene.ITouchArea;
 import org.andengine.entity.scene.Scene;
 import org.andengine.entity.scene.background.Background;
+import org.andengine.entity.scene.menu.MenuScene;
+import org.andengine.entity.scene.menu.MenuScene.IOnMenuItemClickListener;
+import org.andengine.entity.scene.menu.item.IMenuItem;
+import org.andengine.entity.scene.menu.item.SpriteMenuItem;
 import org.andengine.entity.shape.IAreaShape;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.text.AutoWrap;
@@ -35,7 +41,9 @@ import org.andengine.opengl.font.FontFactory;
 import org.andengine.opengl.texture.TextureOptions;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
+import org.andengine.opengl.texture.region.ITextureRegion;
 import org.andengine.opengl.texture.region.TextureRegion;
+import org.andengine.opengl.util.GLState;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 import org.andengine.ui.activity.SimpleBaseGameActivity;
 import org.andengine.util.HorizontalAlign;
@@ -44,6 +52,7 @@ import org.andengine.util.debug.Debug;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.hardware.SensorManager;
+import android.util.DisplayMetrics;
 import android.widget.Toast;
 
 import com.badlogic.gdx.math.Vector2;
@@ -59,7 +68,7 @@ import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.joints.MouseJoint;
 import com.badlogic.gdx.physics.box2d.joints.MouseJointDef;
 
-public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccelerationListener, IOnSceneTouchListener, IOnAreaTouchListener {
+public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccelerationListener, IOnSceneTouchListener, IOnAreaTouchListener, IOnMenuItemClickListener {
 
 	public enum SceneType{
 		
@@ -69,16 +78,34 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
 	
 	public SceneType currentScene = SceneType.GAME; 
 	 
-	private static final int CAMERA_WIDTH = 720;
-	private static final int CAMERA_HEIGHT = 1280;
+	private static int CAMERA_WIDTH = 720;
+	private static int CAMERA_HEIGHT = 1280;
 
-	private static final FixtureDef FIXTURE_DEF = PhysicsFactory.createFixtureDef(1, 0.5f, 0.5f);
+	 /* KATEGORIE fixturedef */
+    public static final short CATEGORYBIT_WALL = 1;
+    public static final short CATEGORYBIT_PUCK = 2;
+    public static final short CATEGORYBIT_BEATER = 4;
+    public static final short CATEGORYBIT_DIVIDER = 8;
+
+    /* FILTRY KOLIZJI */
+    public static final short MASKBITS_WALL = CATEGORYBIT_WALL + CATEGORYBIT_PUCK + CATEGORYBIT_BEATER;
+    public static final short MASKBITS_PUCK = CATEGORYBIT_WALL + CATEGORYBIT_PUCK + CATEGORYBIT_BEATER; 
+    public static final short MASKBITS_BEATER = CATEGORYBIT_WALL + CATEGORYBIT_BEATER + CATEGORYBIT_PUCK + CATEGORYBIT_DIVIDER; 
+    public static final short MASKBITS_DIVIDER = CATEGORYBIT_BEATER; 
+
+    public static final FixtureDef WALL_FIXTURE_DEF = PhysicsFactory.createFixtureDef(0, 0.5f, 0.5f, false, CATEGORYBIT_WALL, MASKBITS_WALL, (short)0);
+    public static final FixtureDef PUCK_FIXTURE_DEF = PhysicsFactory.createFixtureDef(1, 0.5f, 0.5f, false, CATEGORYBIT_PUCK, MASKBITS_PUCK, (short)0);
+    public static final FixtureDef BEATER_FIXTURE_DEF = PhysicsFactory.createFixtureDef(1, 0.5f, 0.5f, false, CATEGORYBIT_BEATER, MASKBITS_BEATER, (short)0);
+    public static final FixtureDef DIVIDER_FIXTURE_DEF = PhysicsFactory.createFixtureDef(0, 0.5f, 0.5f, false, CATEGORYBIT_DIVIDER, MASKBITS_DIVIDER, (short)0);
+
 
 	private Font mFont; 
+	private Text mGoalBottomText;
+	private Text mGoalTopText;
 	
 	private Scene mScene; //Scena glowna 
-	private GameMenu mPauseScene= new GameMenu(); //Scena po wcisnieciu przycisku pause 
-
+	private MenuScene mPauseScene; //Scena po wcisnieciu przycisku pause 
+	
 	private PhysicsWorld mPhysicsWorld; //Swiat fizyczny
 
 	private MouseJoint mMouseJointActive; //mousejoint do poruszania obiektami
@@ -124,14 +151,30 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
 	
 	private int goalTopCount; //punkty gracza grajacego u gory 
 	private int goalBottomCount; //punkty gracza grajacego u dolu
+
+	Camera camera = null;
+
+	private ITextureRegion mMenuResetTextureRegion;
+	private ITextureRegion mMenuQuitTextureRegion;
+	private BitmapTextureAtlas mMenuTexture;
+
+	private Sprite pauseButton;
 	
+	protected static final int MENU_RESET = 0;
+    protected static final int MENU_QUIT = MENU_RESET + 1;
 
 
 	@Override
 	public EngineOptions onCreateEngineOptions() {
 		Toast.makeText(this, "Let's Play", Toast.LENGTH_LONG).show();
 		
-		final Camera camera = new Camera(0, 0, CAMERA_WIDTH, CAMERA_HEIGHT);
+		final DisplayMetrics displayMetrics = new DisplayMetrics();
+        this.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        CAMERA_WIDTH = displayMetrics.widthPixels;
+        CAMERA_HEIGHT= displayMetrics.heightPixels;
+ 
+        this.camera = new Camera(0, 0, CAMERA_WIDTH, CAMERA_HEIGHT);
+
 		Engine mEngine= new Engine(new EngineOptions(true, ScreenOrientation.PORTRAIT_FIXED, new RatioResolutionPolicy(CAMERA_WIDTH, CAMERA_HEIGHT), camera));
 		
 		//Multitouch support
@@ -146,17 +189,14 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
             Toast.makeText(this, "Sorry your device does NOT support MultiTouch!\n\n(Falling back to SingleTouch.)", Toast.LENGTH_LONG).show();
 		}
    
-		
-		
 		return mEngine.getEngineOptions();
-	
 
 	}
 
+	
 	@Override
 	public void onCreateResources() {
 		BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
-		
 		
 		this.mBitmapPuckTextureAtlas = new BitmapTextureAtlas(this.getTextureManager(), 143, 143, TextureOptions.BILINEAR);
 		this.mBitmapBeaterTextureAtlas = new BitmapTextureAtlas(this.getTextureManager(), 204, 204, TextureOptions.BILINEAR);
@@ -164,6 +204,11 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
 		this.mCirclePuckTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapPuckTextureAtlas, this, "puck.png", 0, 0); // 64x32
 		this.mCircleBeaterTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapBeaterTextureAtlas, this, "beater.png", 0, 0); // 64x32
 		
+		this.mMenuTexture = new BitmapTextureAtlas(null, 256, 128, TextureOptions.BILINEAR_PREMULTIPLYALPHA);
+        this.mMenuResetTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mMenuTexture, this, "menu_reset.png", 0, 0);
+        this.mMenuQuitTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mMenuTexture, this, "menu_quit.png", 0, 50);
+        this.mEngine.getTextureManager().loadTexture(this.mMenuTexture);
+         
 		this.mBackgroundAtlas = new BitmapTextureAtlas(this.getTextureManager(), 1300, 1300, TextureOptions.DEFAULT);
         mBgTexture = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBackgroundAtlas, this, "table_bg.png", 0, 0);
         
@@ -173,11 +218,10 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
         this.mGoalPostBottomAtlas = new BitmapTextureAtlas(this.getTextureManager(), 292, 47, TextureOptions.DEFAULT);
         mGPBTexture = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mGoalPostBottomAtlas, this, "goalpost-bottom.png", 0, 0);
         
-
         this.mFont = FontFactory.create(this.getFontManager(), this.getTextureManager(), 256, 256, Typeface.create(Typeface.DEFAULT, Typeface.BOLD), 32, Color.WHITE);
         this.mFont.load();
 
-        
+
         this.mGoalPostTopAtlas.load();
 		this.mGoalPostBottomAtlas.load();
         this.mBackgroundAtlas.load();
@@ -190,10 +234,12 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
 		this.mEngine.registerUpdateHandler(new FPSLogger()); //rejestrowanie ilosci FPS
 
 		this.mScene = new Scene();
+        this.createMenuScene();
+        
 		this.mScene.setBackground(new Background(0, 0, 0));
 		this.mScene.setOnSceneTouchListener(this);
 		this.mScene.setOnAreaTouchListener(this);
-
+		
 		//Tworzenie obiektow
 		this.mPhysicsWorld = new PhysicsWorld(new Vector2(0, SensorManager.GRAVITY_EARTH), false);
 		this.mGroundBody = this.mPhysicsWorld.createBody(new BodyDef());
@@ -201,6 +247,7 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
 		bg = new Sprite(0, 0, this.mBgTexture, this.getVertexBufferObjectManager());
 		goalPostTop = new Sprite(213, 0, this.mGPTTexture, this.getVertexBufferObjectManager());
 		goalPostBottom = new Sprite(213, CAMERA_HEIGHT-46, this.mGPBTexture, this.getVertexBufferObjectManager());
+		
 		
 		final VertexBufferObjectManager vertexBufferObjectManager = this.getVertexBufferObjectManager();
 		
@@ -213,21 +260,20 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
 		final Rectangle left = new Rectangle(0, 0, 44, CAMERA_HEIGHT, vertexBufferObjectManager);
 		final Rectangle right = new Rectangle(CAMERA_WIDTH-44, 0, 44, CAMERA_HEIGHT, vertexBufferObjectManager);
 		
+		final Line divider = new Line(0, CAMERA_HEIGHT/2, CAMERA_WIDTH, CAMERA_HEIGHT/2, 2, vertexBufferObjectManager);
 
-		final FixtureDef wallFixtureDef = PhysicsFactory.createFixtureDef(0, 0.5f, 0.5f);
-
-		PhysicsFactory.createBoxBody(this.mPhysicsWorld, left, BodyType.StaticBody, wallFixtureDef);
-		PhysicsFactory.createBoxBody(this.mPhysicsWorld, right, BodyType.StaticBody, wallFixtureDef);
+		PhysicsFactory.createBoxBody(this.mPhysicsWorld, left, BodyType.StaticBody, WALL_FIXTURE_DEF);
+		PhysicsFactory.createBoxBody(this.mPhysicsWorld, right, BodyType.StaticBody, WALL_FIXTURE_DEF);
 		
-		PhysicsFactory.createBoxBody(this.mPhysicsWorld, roofLeft, BodyType.StaticBody, wallFixtureDef);
-		PhysicsFactory.createBoxBody(this.mPhysicsWorld, roofRight, BodyType.StaticBody, wallFixtureDef);
+		PhysicsFactory.createBoxBody(this.mPhysicsWorld, roofLeft, BodyType.StaticBody, WALL_FIXTURE_DEF);
+		PhysicsFactory.createBoxBody(this.mPhysicsWorld, roofRight, BodyType.StaticBody, WALL_FIXTURE_DEF);
 		
-		PhysicsFactory.createBoxBody(this.mPhysicsWorld, groundLeft, BodyType.StaticBody, wallFixtureDef);
-		PhysicsFactory.createBoxBody(this.mPhysicsWorld, groundRight, BodyType.StaticBody, wallFixtureDef);
+		PhysicsFactory.createBoxBody(this.mPhysicsWorld, groundLeft, BodyType.StaticBody, WALL_FIXTURE_DEF);
+		PhysicsFactory.createBoxBody(this.mPhysicsWorld, groundRight, BodyType.StaticBody, WALL_FIXTURE_DEF);
 		
 	
-		final Text mGoalBottomText = new Text(15, CAMERA_HEIGHT/2 +10, this.mFont, "0", 1000, new TextOptions(AutoWrap.LETTERS, 200, HorizontalAlign.CENTER, Text.LEADING_DEFAULT), this.getVertexBufferObjectManager());
-		final Text mGoalTopText = new Text(CAMERA_WIDTH/2 +140, CAMERA_HEIGHT/2 -45, this.mFont, "0", 1000, new TextOptions(AutoWrap.LETTERS, 200, HorizontalAlign.CENTER, Text.LEADING_DEFAULT), this.getVertexBufferObjectManager());
+		mGoalBottomText = new Text(15, CAMERA_HEIGHT/2 +10, this.mFont, "0", 1000, new TextOptions(AutoWrap.LETTERS, 200, HorizontalAlign.CENTER, Text.LEADING_DEFAULT), this.getVertexBufferObjectManager());
+		mGoalTopText = new Text(CAMERA_WIDTH/2 +140, CAMERA_HEIGHT/2 -45, this.mFont, "0", 1000, new TextOptions(AutoWrap.LETTERS, 200, HorizontalAlign.CENTER, Text.LEADING_DEFAULT), this.getVertexBufferObjectManager());
 
 		mGoalTopText.setRotation(180); //odwrocenie gornego napisu z wynikiem
 		
@@ -238,6 +284,8 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
 		roofRight.setColor(0, 0, 0, 0);
 		groundLeft.setColor(0, 0, 0, 0);
 		groundRight.setColor(0, 0, 0, 0);
+		divider.setColor(0, 0, 0, 0);
+
 
 		this.mScene.attachChild(bg); //dodanie tla do sceny
 		
@@ -250,19 +298,22 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
 		this.mScene.attachChild(roofRight); //gorna prawa sciana
 		this.mScene.attachChild(left); //lewa sciana
 		this.mScene.attachChild(right); //prawa sciana
-
-		this.addPuck(CAMERA_WIDTH/2, CAMERA_HEIGHT/2); //dodanie krazka
-		this.addBeater(CAMERA_WIDTH/3, CAMERA_HEIGHT/3, beater, beaterBody); //dodanie bijaka
-		this.addBeater(CAMERA_WIDTH/8, CAMERA_HEIGHT/8, beater2, beaterBody2); //dodanie bijaka 2
-
+		this.mScene.attachChild(divider);
+		
+		PhysicsFactory.createLineBody(mPhysicsWorld, divider, DIVIDER_FIXTURE_DEF);
+		
+		this.addPuck(CAMERA_WIDTH/2 - mCirclePuckTextureRegion.getWidth()/2, CAMERA_HEIGHT/2 - mCirclePuckTextureRegion.getWidth()/2); //dodanie krazka
+		this.addBeater(CAMERA_WIDTH/2 - mCircleBeaterTextureRegion.getWidth()/2, CAMERA_HEIGHT/4 - mCircleBeaterTextureRegion.getWidth()/2, beater, beaterBody); //dodanie bijaka
+		this.addBeater(CAMERA_WIDTH/2 - mCircleBeaterTextureRegion.getWidth()/2, CAMERA_HEIGHT -CAMERA_HEIGHT/4 - mCircleBeaterTextureRegion.getWidth()/2, beater2, beaterBody2); //dodanie bijaka 2
+	
 		goalPostTopCatch = new Sprite(250, -300, this.mCircleBeaterTextureRegion, this.getVertexBufferObjectManager());
-		goalPostTopCatchBody = PhysicsFactory.createCircleBody(this.mPhysicsWorld, goalPostTopCatch, BodyType.StaticBody, FIXTURE_DEF);
+		goalPostTopCatchBody = PhysicsFactory.createCircleBody(this.mPhysicsWorld, goalPostTopCatch, BodyType.StaticBody, WALL_FIXTURE_DEF);
 			
 		goalPostTopCatch.setUserData(goalPostTopCatchBody);
 		this.mScene.attachChild(goalPostTopCatch); 
 
 		goalPostBottomCatch = new Sprite(250, CAMERA_HEIGHT+100, this.mCircleBeaterTextureRegion, this.getVertexBufferObjectManager());
-		goalPostBottomCatchBody = PhysicsFactory.createCircleBody(this.mPhysicsWorld, goalPostBottomCatch, BodyType.StaticBody, FIXTURE_DEF);
+		goalPostBottomCatchBody = PhysicsFactory.createCircleBody(this.mPhysicsWorld, goalPostBottomCatch, BodyType.StaticBody, WALL_FIXTURE_DEF);
 			
 		goalPostTopCatch.setUserData(goalPostBottomCatchBody);
 		this.mScene.attachChild(goalPostBottomCatch);
@@ -273,6 +324,7 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
 	    mPhysicsWorld.setContactListener(contactListener()); //dodanie contact listenera do sprawdzania czy wpadla bramka
 		this.mScene.registerUpdateHandler(this.mPhysicsWorld);
 		
+		//Nasluchiwanie na okreslone akcje w scenie
 		puck.registerUpdateHandler(new IUpdateHandler(){
             @Override
             public void onUpdate(float pSecondsElapsed) {
@@ -321,6 +373,59 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
 		return this.mScene;
 	}
 	
+	//MENU GRY uruchamiane po wcisnieciu przycisku PAUSE/Wstecz
+	public boolean onMenuItemClicked(final MenuScene pMenuScene, final IMenuItem pMenuItem, final float pMenuItemLocalX, final float pMenuItemLocalY) {
+            switch(pMenuItem.getID()) {
+                    case MENU_RESET:
+                    	
+                    		final float angle = puckBody.getAngle(); 
+                			final Vector2 v2 = Vector2Pool.obtain((CAMERA_WIDTH/2) / PhysicsConstants.PIXEL_TO_METER_RATIO_DEFAULT, (CAMERA_HEIGHT/2) / PhysicsConstants.PIXEL_TO_METER_RATIO_DEFAULT);
+                			puckBody.setTransform(v2, angle); 
+                        	puckBody.setLinearVelocity(0, 0);
+                			Vector2Pool.recycle(v2);
+               
+                			goalBottom = false; 
+                			goalTop = false; 
+                			
+                			goalBottomCount=0; 
+                			goalTopCount=0;
+                			
+                			mGoalTopText.setText(Integer.toString(goalTopCount));
+                			mGoalBottomText.setText(Integer.toString(goalBottomCount));
+                			
+                			mEngine.setScene(mScene);
+                            currentScene = SceneType.GAME;
+                			
+                            return true;
+                    case MENU_QUIT:
+                            
+                            this.finish();
+                            
+                            return true;
+                    default:
+                            return false;
+            }
+    }
+	
+	//Metoda do tworzenia Menu gry
+    protected void createMenuScene() {
+            this.mPauseScene = new MenuScene(camera);
+
+
+            final SpriteMenuItem resetMenuItem = new SpriteMenuItem(MENU_RESET, this.mMenuResetTextureRegion, this.getVertexBufferObjectManager());
+            resetMenuItem.setBlendFunction(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
+            this.mPauseScene.addMenuItem(resetMenuItem);
+
+            final SpriteMenuItem quitMenuItem = new SpriteMenuItem(MENU_QUIT, this.mMenuQuitTextureRegion, this.getVertexBufferObjectManager());
+            quitMenuItem.setBlendFunction(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
+            this.mPauseScene.addMenuItem(quitMenuItem);
+
+            this.mPauseScene.buildAnimations();
+            this.mPauseScene.setBackgroundEnabled(false);
+            this.mPauseScene.setOnMenuItemClickListener(this);
+    }
+
+	
 	@Override
 	public void onGameCreated() {
 		this.mEngine.enableVibrator(this); //pozwala na uzycie wibracji
@@ -332,6 +437,8 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
 		if(this.mPhysicsWorld != null) {
 			switch(pSceneTouchEvent.getAction()) {
 				case TouchEvent.ACTION_DOWN:
+					
+					
 
 					return true;
 				case TouchEvent.ACTION_MOVE:
@@ -393,18 +500,21 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
 	}
 
 	//Zmiana scen (Gra, Pauza)
-	
 	public void onBackPressed(){
-    	
+
     	switch (currentScene)
         {
              case MENU:
-            	 finish();
+            	 
+            	  mEngine.setScene(mScene);
+                  currentScene = SceneType.GAME;
                   break;
              
              case GAME:
+            	 
                   mEngine.setScene(mPauseScene);
                   currentScene = SceneType.MENU;
+
                   break; 
         }
     	
@@ -482,7 +592,7 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
 		mouseJointDef.bodyA = this.mGroundBody;
 		mouseJointDef.bodyB = body;
 		mouseJointDef.dampingRatio = 0.2f;
-		mouseJointDef.frequencyHz = 60;
+		mouseJointDef.frequencyHz = 100;
 		mouseJointDef.maxForce = (100000.0f * body.getMass());
 		mouseJointDef.collideConnected = true;
 
@@ -496,6 +606,7 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
 	//Tworzy mousejointa dla dotknietego obiektu
 	@Override
 	public boolean onAreaTouched(final TouchEvent pSceneTouchEvent, final ITouchArea pTouchArea, final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
+
 		if(pSceneTouchEvent.isActionDown()) {
 			final IAreaShape beater = (IAreaShape) pTouchArea;
 
@@ -515,12 +626,12 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
 		Debug.d("Added Puck ");
 
 		puck = new Sprite(pX, pY, this.mCirclePuckTextureRegion, this.getVertexBufferObjectManager());
-		puckBody = PhysicsFactory.createCircleBody(this.mPhysicsWorld, puck, BodyType.DynamicBody, FIXTURE_DEF);
+		puckBody = PhysicsFactory.createCircleBody(this.mPhysicsWorld, puck, BodyType.DynamicBody, PUCK_FIXTURE_DEF);
 			
 		puck.setUserData(puckBody);
 
 		this.mScene.attachChild(puck);
-		this.mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(puck, puckBody, true, true));
+		this.mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(puck, puckBody, true, false));
 	}
 	
 	//Metoda dodajaca bijak
@@ -529,16 +640,15 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
 		Debug.d("Added Beater ");
 
 		beater = new Sprite(pX, pY, this.mCircleBeaterTextureRegion, this.getVertexBufferObjectManager());
-		beaterBody = PhysicsFactory.createCircleBody(this.mPhysicsWorld, beater, BodyType.DynamicBody, FIXTURE_DEF);
+		beaterBody = PhysicsFactory.createCircleBody(this.mPhysicsWorld, beater, BodyType.DynamicBody, BEATER_FIXTURE_DEF);
 			
 		beater.setUserData(beaterBody);
 
 		this.mScene.attachChild(beater);
 		this.mScene.registerTouchArea(beater);
 
-		this.mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(beater, beaterBody, true, true));
+		this.mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(beater, beaterBody, true, false));
 	}
-	
 	
 	
 
