@@ -21,6 +21,7 @@ import org.andengine.entity.scene.menu.MenuScene.IOnMenuItemClickListener;
 import org.andengine.entity.scene.menu.item.IMenuItem;
 import org.andengine.entity.scene.menu.item.SpriteMenuItem;
 import org.andengine.entity.shape.IAreaShape;
+import org.andengine.entity.sprite.ButtonSprite;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.text.AutoWrap;
 import org.andengine.entity.text.Text;
@@ -168,10 +169,7 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
 	public EngineOptions onCreateEngineOptions() {
 		Toast.makeText(this, "Let's Play", Toast.LENGTH_LONG).show();
 		
-		final DisplayMetrics displayMetrics = new DisplayMetrics();
-        this.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        CAMERA_WIDTH = displayMetrics.widthPixels;
-        CAMERA_HEIGHT= displayMetrics.heightPixels;
+
  
         this.camera = new Camera(0, 0, CAMERA_WIDTH, CAMERA_HEIGHT);
 
@@ -248,6 +246,33 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
 		goalPostTop = new Sprite(213, 0, this.mGPTTexture, this.getVertexBufferObjectManager());
 		goalPostBottom = new Sprite(213, CAMERA_HEIGHT-46, this.mGPBTexture, this.getVertexBufferObjectManager());
 		
+		pauseButton = new Sprite(CAMERA_WIDTH/2 - mCirclePuckTextureRegion.getWidth()/2, CAMERA_HEIGHT/2 - mCirclePuckTextureRegion.getWidth()/2, this.mCirclePuckTextureRegion, this.getVertexBufferObjectManager()) {
+
+	        @Override
+	        public boolean onAreaTouched(TouchEvent pSceneTouchEvent,
+	                float pTouchAreaLocalX, float pTouchAreaLocalY) {
+
+	            if(pSceneTouchEvent.isActionDown()){
+	            	Debug.i("Pause Menu Button Pressed");
+	            	
+	            }
+	            
+	            if(pSceneTouchEvent.isActionUp()){
+	            	
+	            	mEngine.setScene(mPauseScene);
+	                currentScene = SceneType.MENU;
+	                
+	            }
+	                
+
+	            return true;
+	        }
+
+	        
+	    };
+
+	   
+	    this.mScene.registerTouchArea(pauseButton);
 		
 		final VertexBufferObjectManager vertexBufferObjectManager = this.getVertexBufferObjectManager();
 		
@@ -291,7 +316,7 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
 		
 		this.mScene.attachChild(mGoalTopText); //wyswietlanie punktow dla gornego gracza
 		this.mScene.attachChild(mGoalBottomText); //wyswietlanie punktow dla dolnego gracza
-		
+		 this.mScene.attachChild(pauseButton);
 		this.mScene.attachChild(groundLeft); //dolna lewa sciana
 		this.mScene.attachChild(groundRight); //dolna prawa sciana 
 		this.mScene.attachChild(roofLeft); //gorna lewa sciana 
