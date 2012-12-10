@@ -7,13 +7,14 @@
     tools:context=".HelpWindow" >
     
     <TextView
+        android:id="@+id/HelpText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="10dp"
         android:text="@string/help_window_content" />
         
     <Button
-        android:id="@+id/button1"
+        android:id="@+id/HelpBackButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
