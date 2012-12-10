@@ -47,7 +47,7 @@ public class Test_mainactivity extends ActivityInstrumentationTestCase2<MainActi
 	    Button view = (Button) activity.findViewById(com.copyandpasteteam.air_hockey.R.id.HelpButton);  
 	    TouchUtils.clickView(this, view);
 	    this.sendKeys(KeyEvent.KEYCODE_BACK);
-	    TouchUtils.clickView(this, view);
+
 		 
   }
   
@@ -58,7 +58,7 @@ public class Test_mainactivity extends ActivityInstrumentationTestCase2<MainActi
 	    Button view = (Button) activity.findViewById(com.copyandpasteteam.air_hockey.R.id.InfoButton);  
 	    TouchUtils.clickView(this, view);
 	    this.sendKeys(KeyEvent.KEYCODE_BACK);
-	    TouchUtils.clickView(this, view);
+	    
 	 
   }
   
