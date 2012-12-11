@@ -199,8 +199,8 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
 		this.mBitmapPuckTextureAtlas = new BitmapTextureAtlas(this.getTextureManager(), 143, 143, TextureOptions.BILINEAR);
 		this.mBitmapBeaterTextureAtlas = new BitmapTextureAtlas(this.getTextureManager(), 204, 204, TextureOptions.BILINEAR);
 		
-		this.mCirclePuckTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapPuckTextureAtlas, this, "puck.png", 0, 0); // 64x32
-		this.mCircleBeaterTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapBeaterTextureAtlas, this, "beater.png", 0, 0); // 64x32
+		this.mCirclePuckTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapPuckTextureAtlas, this, "puck.png", 0, 0); 
+		this.mCircleBeaterTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapBeaterTextureAtlas, this, "beater.png", 0, 0); 
 		
 		this.mMenuTexture = new BitmapTextureAtlas(null, 256, 128, TextureOptions.BILINEAR_PREMULTIPLYALPHA);
         this.mMenuResetTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mMenuTexture, this, "menu_reset.png", 0, 0);
@@ -258,13 +258,10 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
 	            }
 	            
 	            if(pSceneTouchEvent.isActionUp()){
-	            	
 	            	mEngine.setScene(mPauseScene);
-	                currentScene = SceneType.MENU;
-	                
+	                currentScene = SceneType.MENU;  
 	            }
 	                
-
 	            return true;
 	        }
 
