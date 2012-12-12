@@ -141,6 +141,13 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
 	private Sprite beater2;
 	private Body beaterBody2;
 	
+	private Body leftBody;
+	private Body rightBody;
+	private Body roofLeftBody;
+	private Body roofRightBody;
+	private Body groundRightBody;
+	private Body groundLeftBody;
+	
 	//Obiekty umieszczone za bramka ktore po zetknieciu sie z krazkiem powoduja przyznanie punktu
 	private Sprite goalPostTopCatch;
 	private Sprite goalPostBottomCatch;
@@ -172,9 +179,10 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
 
  
         this.camera = new Camera(0, 0, CAMERA_WIDTH, CAMERA_HEIGHT);
+        
+        final EngineOptions engineOptions = new EngineOptions(true, ScreenOrientation.PORTRAIT_FIXED, new RatioResolutionPolicy(CAMERA_WIDTH, CAMERA_HEIGHT), camera);
+		Engine mEngine = new Engine(engineOptions);
 
-		Engine mEngine= new Engine(new EngineOptions(true, ScreenOrientation.PORTRAIT_FIXED, new RatioResolutionPolicy(CAMERA_WIDTH, CAMERA_HEIGHT), camera));
-		
 		//Multitouch support
 		if(MultiTouch.isSupported(this)) {
             mEngine.setTouchController(new MultiTouchController());
@@ -284,16 +292,15 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
 		
 		final Line divider = new Line(0, CAMERA_HEIGHT/2, CAMERA_WIDTH, CAMERA_HEIGHT/2, 2, vertexBufferObjectManager);
 
-		PhysicsFactory.createBoxBody(this.mPhysicsWorld, left, BodyType.StaticBody, WALL_FIXTURE_DEF);
-		PhysicsFactory.createBoxBody(this.mPhysicsWorld, right, BodyType.StaticBody, WALL_FIXTURE_DEF);
+		leftBody = PhysicsFactory.createBoxBody(this.mPhysicsWorld, left, BodyType.StaticBody, WALL_FIXTURE_DEF);
+		rightBody = PhysicsFactory.createBoxBody(this.mPhysicsWorld, right, BodyType.StaticBody, WALL_FIXTURE_DEF);
 		
-		PhysicsFactory.createBoxBody(this.mPhysicsWorld, roofLeft, BodyType.StaticBody, WALL_FIXTURE_DEF);
-		PhysicsFactory.createBoxBody(this.mPhysicsWorld, roofRight, BodyType.StaticBody, WALL_FIXTURE_DEF);
+		roofLeftBody = PhysicsFactory.createBoxBody(this.mPhysicsWorld, roofLeft, BodyType.StaticBody, WALL_FIXTURE_DEF);
+		roofRightBody = PhysicsFactory.createBoxBody(this.mPhysicsWorld, roofRight, BodyType.StaticBody, WALL_FIXTURE_DEF);
 		
-		PhysicsFactory.createBoxBody(this.mPhysicsWorld, groundLeft, BodyType.StaticBody, WALL_FIXTURE_DEF);
-		PhysicsFactory.createBoxBody(this.mPhysicsWorld, groundRight, BodyType.StaticBody, WALL_FIXTURE_DEF);
+		groundLeftBody = PhysicsFactory.createBoxBody(this.mPhysicsWorld, groundLeft, BodyType.StaticBody, WALL_FIXTURE_DEF);
+		groundRightBody =PhysicsFactory.createBoxBody(this.mPhysicsWorld, groundRight, BodyType.StaticBody, WALL_FIXTURE_DEF);
 		
-	
 		mGoalBottomText = new Text(15, CAMERA_HEIGHT/2 +10, this.mFont, "0", 1000, new TextOptions(AutoWrap.LETTERS, 200, HorizontalAlign.CENTER, Text.LEADING_DEFAULT), this.getVertexBufferObjectManager());
 		mGoalTopText = new Text(CAMERA_WIDTH/2 +140, CAMERA_HEIGHT/2 -45, this.mFont, "0", 1000, new TextOptions(AutoWrap.LETTERS, 200, HorizontalAlign.CENTER, Text.LEADING_DEFAULT), this.getVertexBufferObjectManager());
 
@@ -308,12 +315,18 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
 		groundRight.setColor(0, 0, 0, 0);
 		divider.setColor(0, 0, 0, 0);
 
+		leftBody.setUserData("wall");
+		rightBody.setUserData("wall");
+		roofLeftBody.setUserData("wall");
+		roofRightBody.setUserData("wall");
+		groundLeftBody.setUserData("wall");
+		groundRightBody.setUserData("wall");
 
 		this.mScene.attachChild(bg); //dodanie tla do sceny
 		
 		this.mScene.attachChild(mGoalTopText); //wyswietlanie punktow dla gornego gracza
 		this.mScene.attachChild(mGoalBottomText); //wyswietlanie punktow dla dolnego gracza
-		 this.mScene.attachChild(pauseButton);
+		this.mScene.attachChild(pauseButton);
 		this.mScene.attachChild(groundLeft); //dolna lewa sciana
 		this.mScene.attachChild(groundRight); //dolna prawa sciana 
 		this.mScene.attachChild(roofLeft); //gorna lewa sciana 
@@ -433,7 +446,6 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
     protected void createMenuScene() {
             this.mPauseScene = new MenuScene(camera);
 
-
             final SpriteMenuItem resetMenuItem = new SpriteMenuItem(MENU_RESET, this.mMenuResetTextureRegion, this.getVertexBufferObjectManager());
             resetMenuItem.setBlendFunction(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
             this.mPauseScene.addMenuItem(resetMenuItem);
@@ -452,7 +464,23 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
 	public void onGameCreated() {
 		this.mEngine.enableVibrator(this); //pozwala na uzycie wibracji
 	}
+	
+	//Tworzy mousejointa dla dotknietego obiektu
+		@Override
+		public boolean onAreaTouched(final TouchEvent pSceneTouchEvent, final ITouchArea pTouchArea, final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
 
+			if(pSceneTouchEvent.isActionDown()) {
+				final IAreaShape beater = (IAreaShape) pTouchArea;
+
+				if(this.mMouseJointActive == null) {
+					this.mEngine.vibrate(50);
+					this.mMouseJointActive = this.createMouseJoint(beater, pTouchAreaLocalX, pTouchAreaLocalY);
+				}
+				
+				return true;
+			}
+			return false;
+		}
 	
 	@Override
 	public boolean onSceneTouchEvent(final Scene pScene, final TouchEvent pSceneTouchEvent) {
@@ -460,12 +488,9 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
 			switch(pSceneTouchEvent.getAction()) {
 				case TouchEvent.ACTION_DOWN:
 					
-					
-
 					return true;
-				case TouchEvent.ACTION_MOVE:
 					
-					//przesuwanie bijaka
+				case TouchEvent.ACTION_MOVE:
 					
 					if(this.mMouseJointActive != null) {
 						final Vector2 vec = Vector2Pool.obtain(pSceneTouchEvent.getX() / PhysicsConstants.PIXEL_TO_METER_RATIO_DEFAULT, pSceneTouchEvent.getY() / PhysicsConstants.PIXEL_TO_METER_RATIO_DEFAULT);
@@ -564,7 +589,7 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
                         	
                        }
                        
-                     //Krazek wpadl do dolnej bramki
+                       //Krazek wpadl do dolnej bramki
                        if (x2.getBody().equals(goalPostBottomCatchBody) && x1.getBody().equals(puckBody))
                        {                                             
                         	Debug.d("Goal for PlayerTop");
@@ -572,7 +597,15 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
               
                        }
                        
-                       //kontakt krazka z bijakiem 1
+                       //Kontakt krazka ze sciana
+                       if (x2.getBody().equals(puckBody) && x1.getBody().getUserData().equals("wall"))
+                       {                          
+                    	   
+                        	Debug.d("Puck Wall Contact");
+              
+                       }
+                       
+                       //Kontakt krazka z bijakiem
                        if (x2.getBody().equals(beaterBody) && x1.getBody().equals(puckBody))
                        {                                             
                         	Debug.d("Beater and Puck Contact");
@@ -625,22 +658,6 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
 	}
 	
 	
-	//Tworzy mousejointa dla dotknietego obiektu
-	@Override
-	public boolean onAreaTouched(final TouchEvent pSceneTouchEvent, final ITouchArea pTouchArea, final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
-
-		if(pSceneTouchEvent.isActionDown()) {
-			final IAreaShape beater = (IAreaShape) pTouchArea;
-
-			if(this.mMouseJointActive == null) {
-				this.mEngine.vibrate(50);
-				this.mMouseJointActive = this.createMouseJoint(beater, pTouchAreaLocalX, pTouchAreaLocalY);
-			}
-			
-			return true;
-		}
-		return false;
-	}
 
 	//Metoda dodajaca krazek
 	private void addPuck(final float pX, final float pY) {
@@ -661,15 +678,15 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
 
 		Debug.d("Added Beater ");
 
-		beater = new Sprite(pX, pY, this.mCircleBeaterTextureRegion, this.getVertexBufferObjectManager());
-		beaterBody = PhysicsFactory.createCircleBody(this.mPhysicsWorld, beater, BodyType.DynamicBody, BEATER_FIXTURE_DEF);
+		this.beater = new Sprite(pX, pY, this.mCircleBeaterTextureRegion, this.getVertexBufferObjectManager());
+		this.beaterBody = PhysicsFactory.createCircleBody(this.mPhysicsWorld, this.beater, BodyType.DynamicBody, BEATER_FIXTURE_DEF);
 			
-		beater.setUserData(beaterBody);
+		this.beater.setUserData(this.beaterBody);
 
-		this.mScene.attachChild(beater);
-		this.mScene.registerTouchArea(beater);
+		this.mScene.attachChild(this.beater);
+		this.mScene.registerTouchArea(this.beater);
 
-		this.mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(beater, beaterBody, true, false));
+		this.mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(this.beater, this.beaterBody, true, false));
 	}
 	
 	
