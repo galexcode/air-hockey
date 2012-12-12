@@ -1,8 +1,12 @@
 
 package com.copyandpasteteam.air_hockey;
 
+import java.io.IOException;
+
 import javax.microedition.khronos.opengles.GL10;
 
+import org.andengine.audio.sound.Sound;
+import org.andengine.audio.sound.SoundFactory;
 import org.andengine.engine.Engine;
 import org.andengine.engine.camera.Camera;
 import org.andengine.engine.handler.IUpdateHandler;
@@ -168,6 +172,10 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
 
 	private Sprite pauseButton;
 	
+	private Sound puckBeaterSound;
+	private Sound puckWallSound;
+	private Sound goalSound;
+	
 	protected static final int MENU_RESET = 0;
     protected static final int MENU_QUIT = MENU_RESET + 1;
 
@@ -175,14 +183,13 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
 	@Override
 	public EngineOptions onCreateEngineOptions() {
 		Toast.makeText(this, "Let's Play", Toast.LENGTH_LONG).show();
-		
 
- 
         this.camera = new Camera(0, 0, CAMERA_WIDTH, CAMERA_HEIGHT);
         
         final EngineOptions engineOptions = new EngineOptions(true, ScreenOrientation.PORTRAIT_FIXED, new RatioResolutionPolicy(CAMERA_WIDTH, CAMERA_HEIGHT), camera);
 		Engine mEngine = new Engine(engineOptions);
-
+		engineOptions.getAudioOptions().setNeedsSound(true);
+		
 		//Multitouch support
 		if(MultiTouch.isSupported(this)) {
             mEngine.setTouchController(new MultiTouchController());
@@ -203,6 +210,16 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
 	@Override
 	public void onCreateResources() {
 		BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
+		SoundFactory.setAssetBasePath("mfx/"); //Sciezka do plikow dzwiekowych
+		
+		try {
+            this.puckBeaterSound = SoundFactory.createSoundFromAsset(this.mEngine.getSoundManager(), this, "puckBeaterSound.ogg");
+            this.puckWallSound = SoundFactory.createSoundFromAsset(this.mEngine.getSoundManager(), this, "puckWallSound.ogg");
+            this.goalSound = SoundFactory.createSoundFromAsset(this.mEngine.getSoundManager(), this, "goalSound.ogg");
+           
+			} catch (final IOException e) {
+				Debug.e(e);
+			}
 		
 		this.mBitmapPuckTextureAtlas = new BitmapTextureAtlas(this.getTextureManager(), 143, 143, TextureOptions.BILINEAR);
 		this.mBitmapBeaterTextureAtlas = new BitmapTextureAtlas(this.getTextureManager(), 204, 204, TextureOptions.BILINEAR);
@@ -585,6 +602,7 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
                        if (x2.getBody().equals(goalPostTopCatchBody) && x1.getBody().equals(puckBody))
                        {                                             
                         	Debug.d("Goal for PlayerBottom");
+                        	goalSound.play();
                         	goalBottom = true;
                         	
                        }
@@ -593,6 +611,7 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
                        if (x2.getBody().equals(goalPostBottomCatchBody) && x1.getBody().equals(puckBody))
                        {                                             
                         	Debug.d("Goal for PlayerTop");
+                        	goalSound.play();
                         	goalTop = true;
               
                        }
@@ -600,7 +619,7 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
                        //Kontakt krazka ze sciana
                        if (x2.getBody().equals(puckBody) && x1.getBody().getUserData().equals("wall"))
                        {                          
-                    	   
+                    	    puckWallSound.play();
                         	Debug.d("Puck Wall Contact");
               
                        }
@@ -608,7 +627,8 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
                        //Kontakt krazka z bijakiem
                        if (x2.getBody().equals(beaterBody) && x1.getBody().equals(puckBody))
                        {                                             
-                        	Debug.d("Beater and Puck Contact");
+                    	   puckBeaterSound.play();
+                    	   Debug.d("Beater and Puck Contact");
                         	
                        }
                            
