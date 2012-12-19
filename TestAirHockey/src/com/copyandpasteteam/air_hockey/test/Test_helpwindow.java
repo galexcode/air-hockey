@@ -1,16 +1,10 @@
 package com.copyandpasteteam.air_hockey.test;
 
-import com.copyandpasteteam.air_hockey.HelpWindow;
-import com.copyandpasteteam.air_hockey.MainActivity;
-import com.copyandpasteteam.air_hockey.SplashScreen;
-import com.jayway.android.robotium.solo.Solo;
-
-import android.app.Instrumentation;
 import android.test.ActivityInstrumentationTestCase2;
-import android.test.TouchUtils;
-import android.view.KeyEvent;
 import android.view.View;
-import android.widget.Button;
+
+import com.copyandpasteteam.air_hockey.HelpWindow;
+import com.jayway.android.robotium.solo.Solo;
 
 public class Test_helpwindow extends ActivityInstrumentationTestCase2<HelpWindow> {
 

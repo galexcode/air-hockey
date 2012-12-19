@@ -1,11 +1,6 @@
 package com.copyandpasteteam.air_hockey.test;
-import android.app.Instrumentation;
 import android.test.ActivityInstrumentationTestCase2;
-import android.test.TouchUtils;
-import android.view.KeyEvent;
 import android.view.View;
-import android.widget.Button;
-
 
 import com.copyandpasteteam.air_hockey.MainActivity;
 import com.jayway.android.robotium.solo.Solo;

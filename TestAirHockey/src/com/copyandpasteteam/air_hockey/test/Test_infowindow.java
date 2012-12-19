@@ -1,15 +1,11 @@
 package com.copyandpasteteam.air_hockey.test;
 
 
+import android.test.ActivityInstrumentationTestCase2;
+import android.view.View;
+
 import com.copyandpasteteam.air_hockey.InfoWindow;
 import com.jayway.android.robotium.solo.Solo;
-
-import android.app.Instrumentation;
-import android.test.ActivityInstrumentationTestCase2;
-import android.test.TouchUtils;
-import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
 
 public class Test_infowindow extends ActivityInstrumentationTestCase2<InfoWindow> {
 

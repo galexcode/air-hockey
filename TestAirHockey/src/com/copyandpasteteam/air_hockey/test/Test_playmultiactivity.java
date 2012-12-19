@@ -1,10 +1,9 @@
 package com.copyandpasteteam.air_hockey.test;
 
-import com.copyandpasteteam.air_hockey.MainActivity;
+import android.test.ActivityInstrumentationTestCase2;
+
 import com.copyandpasteteam.air_hockey.PlayMultiActivity;
 import com.jayway.android.robotium.solo.Solo;
-
-import android.test.ActivityInstrumentationTestCase2;
 
 public class Test_playmultiactivity extends ActivityInstrumentationTestCase2<PlayMultiActivity> {
 

@@ -27,11 +27,12 @@ public class Test_splashscreen extends ActivityInstrumentationTestCase2<SplashSc
 		solo.clickOnView(view); 
 	
 	}
-	/*public void test_app()
+	public void test_app()
 	{
-		solo.assertCurrentActivity("Wrong activity", SplashScreen.class);
-		solo.goBack();
-	}*/
+
+	solo.assertCurrentActivity("Wrong activity", SplashScreen.class);
+		
+	}
 	  @Override
 	  public void tearDown() throws Exception {
 	    try {
