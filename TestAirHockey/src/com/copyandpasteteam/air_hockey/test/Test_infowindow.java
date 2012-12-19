@@ -7,7 +7,9 @@ import com.jayway.android.robotium.solo.Solo;
 import android.app.Instrumentation;
 import android.test.ActivityInstrumentationTestCase2;
 import android.test.TouchUtils;
+import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 public class Test_infowindow extends ActivityInstrumentationTestCase2<InfoWindow> {
 
@@ -24,7 +26,7 @@ public class Test_infowindow extends ActivityInstrumentationTestCase2<InfoWindow
 	
 	public void testApp()
 	{
-		solo.assertCurrentActivity("ASD", InfoWindow.class);
+		solo.assertCurrentActivity("Wrong activity", InfoWindow.class);
 		
 	}
 	
@@ -39,12 +41,21 @@ public class Test_infowindow extends ActivityInstrumentationTestCase2<InfoWindow
 	}
 
 	  public void test3() throws Exception {
-	         
-		    Instrumentation instrumentation = getInstrumentation();
-		    InfoWindow activity = getActivity();
-		    Button view = (Button) activity.findViewById(com.copyandpasteteam.air_hockey.R.id.InfoBackButton);  
-		    TouchUtils.clickView(this, view);
-		 
+
+		  View button = solo.getView(com.copyandpasteteam.air_hockey.R.id.InfoBackButton);
+		  solo.clickOnView(button);
 	 }
+	  
+	  @Override
+	  public void tearDown() throws Exception {
+	    try {
+	      solo.finalize();
+	    } catch (Throwable e) {
+
+	      e.printStackTrace();
+	    }
+	    getActivity().finish();
+	    super.tearDown();
+	  }
 
 }

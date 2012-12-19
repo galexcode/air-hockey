@@ -3,6 +3,7 @@ import android.app.Instrumentation;
 import android.test.ActivityInstrumentationTestCase2;
 import android.test.TouchUtils;
 import android.view.KeyEvent;
+import android.view.View;
 import android.widget.Button;
 
 
@@ -26,48 +27,35 @@ public class Test_mainactivity extends ActivityInstrumentationTestCase2<MainActi
   
   public void testApp()
   {
-		solo.assertCurrentActivity("ASD", MainActivity.class);
+		solo.assertCurrentActivity("Wrong activity", MainActivity.class);
   }
   
   public void testMultiplayer() throws Exception {
          
-    Instrumentation instrumentation = getInstrumentation();
-    MainActivity activity = getActivity();
-    Button view = (Button) activity.findViewById(com.copyandpasteteam.air_hockey.R.id.MultiPlayerStartButton);  
-    TouchUtils.clickView(this, view);
-    this.sendKeys(KeyEvent.KEYCODE_BACK);
-    TouchUtils.clickView(this, view);
+	  View button = solo.getView(com.copyandpasteteam.air_hockey.R.id.MultiPlayerStartButton);
+	  solo.clickOnView(button);
  
   }
   
   public void testHelp() throws Exception {
-      
-	    Instrumentation instrumentation = getInstrumentation();
-	    MainActivity activity = getActivity();
-	    Button view = (Button) activity.findViewById(com.copyandpasteteam.air_hockey.R.id.HelpButton);  
-	    TouchUtils.clickView(this, view);
-	    this.sendKeys(KeyEvent.KEYCODE_BACK);
+	    
+		  View button = solo.getView(com.copyandpasteteam.air_hockey.R.id.HelpButton);
+		  solo.clickOnView(button);
 
 		 
   }
   
   public void testInfo() throws Exception {
-      
-	    Instrumentation instrumentation = getInstrumentation();
-	    MainActivity activity = getActivity();
-	    Button view = (Button) activity.findViewById(com.copyandpasteteam.air_hockey.R.id.InfoButton);  
-	    TouchUtils.clickView(this, view);
-	    this.sendKeys(KeyEvent.KEYCODE_BACK);
-	    
+        
+		  View button = solo.getView(com.copyandpasteteam.air_hockey.R.id.InfoButton);
+		  solo.clickOnView(button);    
 	 
   }
   
   public void testExit() throws Exception {
       
-	    Instrumentation instrumentation = getInstrumentation();
-	    MainActivity activity = getActivity();
-	    Button view = (Button) activity.findViewById(com.copyandpasteteam.air_hockey.R.id.ExitButton);  
-	    TouchUtils.clickView(this, view);
+		  View button = solo.getView(com.copyandpasteteam.air_hockey.R.id.ExitButton);
+		  solo.clickOnView(button);    
 	 
   }
   
@@ -75,6 +63,17 @@ public class Test_mainactivity extends ActivityInstrumentationTestCase2<MainActi
   {
 		solo.goBack();
   }
- 
+  
+  @Override
+  public void tearDown() throws Exception {
+    try {
+      solo.finalize();
+    } catch (Throwable e) {
+
+      e.printStackTrace();
+    }
+    getActivity().finish();
+    super.tearDown();
+  }
 
 }

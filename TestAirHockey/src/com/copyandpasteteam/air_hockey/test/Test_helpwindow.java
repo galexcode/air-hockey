@@ -27,7 +27,7 @@ public class Test_helpwindow extends ActivityInstrumentationTestCase2<HelpWindow
 	
 	public void testApp()
 	{
-		solo.assertCurrentActivity("ASD", HelpWindow.class);
+		solo.assertCurrentActivity("Wrong acitivity", HelpWindow.class);
 		
 	}
 	
@@ -43,10 +43,19 @@ public class Test_helpwindow extends ActivityInstrumentationTestCase2<HelpWindow
 
 	  public void test3() throws Exception {
 	         
-		    Instrumentation instrumentation = getInstrumentation();
-		    HelpWindow activity = getActivity();
-		    Button view = (Button) activity.findViewById(com.copyandpasteteam.air_hockey.R.id.HelpBackButton);  
-		    TouchUtils.clickView(this, view);
+			  View button = solo.getView(com.copyandpasteteam.air_hockey.R.id.HelpBackButton);
+			  solo.clickOnView(button);
 		 
 	 }
+	  @Override
+	  public void tearDown() throws Exception {
+	    try {
+	      solo.finalize();
+	    } catch (Throwable e) {
+
+	      e.printStackTrace();
+	    }
+	    getActivity().finish();
+	    super.tearDown();
+	  }
 }
