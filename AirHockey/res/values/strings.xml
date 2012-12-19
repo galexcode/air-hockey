@@ -23,20 +23,15 @@
         Nulla non lectus sapien, id lobortis sem.</string>
         
     
-    <string name="help_window_content">1. Pellentesque neque ante, adipiscing in mattis at, tempus vitae orci. 
-        Fusce vestibulum lorem ut nulla rutrum malesuada. 
-        Cras tellus lacus, commodo at dignissim ut, placerat vitae mauris. 
-        Sed adipiscing dictum orci sed pulvinar. Sed id leo quam, at vehicula tellus. 
-        Praesent aliquet pellentesque mauris non commodo. Suspendisse fringilla nibh non 
-        dolor aliquet tristique. Sed a augue urna, volutpat accumsan lorem. 
-        Proin auctor velit at magna molestie nec laoreet felis mollis.
-        \n\n
-        2. Cras a nisi justo, vitae pretium nisi. 
-        Morbi elementum, arcu vitae scelerisque elementum, sem quam pharetra arcu, 
-        eu iaculis diam orci id leo. Ut sollicitudin faucibus diam ut tincidunt. 
-        Ut nulla erat, tincidunt non pretium nec, porta eget lorem. Sed et quam eget 
-        lorem aliquet blandit. In sem erat, imperdiet sit amet dignissim sed, vulputate 
-        rhoncus sapien. In laoreet nunc ut purus vulputate ullamcorper. Ut vitae elit quam. 
-        Mauris semper fringilla scelerisque. 
-        In erat massa, mattis non malesuada vitae, congue in ipsum.</string>
+    <string name="help_window_content">Air Hockey to rodzaj zręcznościowej gry przeznaczonej dla dwóch osób. 
+        Do gry używana jest specjalna plansza na której ulokowane są dwie bramki, dwa bijaki i krążek. 
+        Każdy z graczy zajmuje tylko jedną połowę planszy i tylko po niej może się poruszać.  
+        Sam „gameplay” jest bardzo prosty, każdy z graczy obsługuje swojego bijaka, którym może uderzać 
+        w krążek z ustaloną siłą i prędkością. Głównym celem rozgrywki jest zdobycie odpowiedniej 
+        ilości punktów, liczba ta jest ustalana przez graczy przed przystąpieniem do rozgrywki.  
+        Zdobycie punktu uważa się w momencie wpadnięcia całego krążka do jednej z bramek. 
+        W grze przewidziana jest możliwość zdobycia samobójczej bramki.  
+        Zabrania się blokowania krążka w jednym z czterech rogów planszy.  
+        Generalnie regulamin gry nie jest skodyfikowany, dzięki czemu to gracze mogą ustalić 
+        część zasad jaka będzie ich obowiązywała podczas gry. </string>
 </resources>
