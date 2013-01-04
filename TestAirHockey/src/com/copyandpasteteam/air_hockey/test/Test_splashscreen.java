@@ -19,20 +19,20 @@ public class Test_splashscreen extends ActivityInstrumentationTestCase2<SplashSc
 	    solo = new Solo(getInstrumentation(), getActivity());
 	}
 
-
-
 	public void test_splash() throws Exception {
 
 		View view= solo.getView(com.copyandpasteteam.air_hockey.R.id.SplashImageView);
 		solo.clickOnView(view); 
 	
 	}
+	
 	public void test_app()
 	{
 
 	solo.assertCurrentActivity("Wrong activity", SplashScreen.class);
 		
 	}
+	
 	  @Override
 	  public void tearDown() throws Exception {
 	    try {

@@ -16,8 +16,10 @@ public class Test_infowindow extends ActivityInstrumentationTestCase2<InfoWindow
 	}
 
 	protected void setUp() throws Exception {
+		
 	    super.setUp();
 	    solo = new Solo(getInstrumentation(), getActivity());
+	    
 	}
 	
 	public void testApp()
@@ -27,12 +29,14 @@ public class Test_infowindow extends ActivityInstrumentationTestCase2<InfoWindow
 	}
 	
 	public void test1(){
-		solo.goBack();
+		
+		  solo.goBack();
+	
 	}
 	
 	public void test2(){
 		
-		solo.clickOnView(solo.getView(com.copyandpasteteam.air_hockey.R.id.InfoText));
+		  solo.clickOnView(solo.getView(com.copyandpasteteam.air_hockey.R.id.InfoText));
 		
 	}
 
@@ -41,6 +45,24 @@ public class Test_infowindow extends ActivityInstrumentationTestCase2<InfoWindow
 		  View button = solo.getView(com.copyandpasteteam.air_hockey.R.id.InfoBackButton);
 		  solo.clickOnView(button);
 	 }
+	  
+	  public void test4() throws Exception {
+	         
+		  solo.clickOnText("Close");
+	 
+      }
+	  
+	  public void test5() throws Exception {
+	         
+		  solo.clickOnText("About");
+	 
+      }
+	  
+      public void test6() throws Throwable {
+			  
+			  solo.finalize();
+  
+		 }
 	  
 	  @Override
 	  public void tearDown() throws Exception {
