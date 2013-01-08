@@ -1,7 +1,9 @@
 *.class
 bin/
 gen/
+.settings/
 
 # Package Files #
 *.war
 *.ear
+*.properties
