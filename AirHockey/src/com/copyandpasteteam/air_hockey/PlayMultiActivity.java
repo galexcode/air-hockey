@@ -129,6 +129,9 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
 	private TextureRegion mCircleBeaterTextureRegion;
 	private TextureRegion mCirclePuckTextureRegion;
 	
+	private BitmapTextureAtlas mPauseTextureAtlas;
+	private TextureRegion mPauseTextureRegion;
+	
 	private BitmapTextureAtlas mBackgroundAtlas;
 	private BitmapTextureAtlas mGoalPostBottomAtlas;
 	private BitmapTextureAtlas mGoalPostTopAtlas;
@@ -170,7 +173,8 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
 
 	private ITextureRegion mMenuResetTextureRegion;
 	private ITextureRegion mMenuQuitTextureRegion;
-	private BitmapTextureAtlas mMenuTexture;
+	private ITextureRegion mMenuResumeTextureRegion;
+	private BitmapTextureAtlas mMenuTextureAtlas;
 
 	private Sprite pauseButton;
 	
@@ -181,8 +185,10 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
 	private Text mGoalInfoTopText;
 	private Text mGoalInfoBottomText;
 	
-	protected static final int MENU_RESET = 0;
+    protected static final int MENU_RESUME = 0;
+	protected static final int MENU_RESET = 1;
     protected static final int MENU_QUIT = MENU_RESET + 1;
+
 
 
 	@Override
@@ -232,10 +238,14 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
 		this.mCirclePuckTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapPuckTextureAtlas, this, "puck.png", 0, 0); 
 		this.mCircleBeaterTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapBeaterTextureAtlas, this, "beater.png", 0, 0); 
 		
-		this.mMenuTexture = new BitmapTextureAtlas(null, 256, 128, TextureOptions.BILINEAR_PREMULTIPLYALPHA);
-        this.mMenuResetTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mMenuTexture, this, "menu_reset.png", 0, 0);
-        this.mMenuQuitTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mMenuTexture, this, "menu_quit.png", 0, 50);
-        this.mEngine.getTextureManager().loadTexture(this.mMenuTexture);
+		this.mPauseTextureAtlas = new BitmapTextureAtlas(this.getTextureManager(), 80, 80, TextureOptions.BILINEAR);
+		this.mPauseTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mPauseTextureAtlas, this, "pause.png", 0, 0); 
+		
+		this.mMenuTextureAtlas = new BitmapTextureAtlas(null, 360, 460, TextureOptions.BILINEAR_PREMULTIPLYALPHA);
+		this.mMenuResumeTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mMenuTextureAtlas, this, "menu_resume.png", 0, 0);
+		this.mMenuResetTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mMenuTextureAtlas, this, "menu_reset.png", 0, 150);
+        this.mMenuQuitTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mMenuTextureAtlas, this, "menu_quit.png", 0, 300);
+        this.mEngine.getTextureManager().loadTexture(this.mMenuTextureAtlas);
          
 		this.mBackgroundAtlas = new BitmapTextureAtlas(this.getTextureManager(), 1300, 1300, TextureOptions.DEFAULT);
         mBgTexture = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBackgroundAtlas, this, "table_bg.png", 0, 0);
@@ -249,7 +259,7 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
         this.mFont = FontFactory.create(this.getFontManager(), this.getTextureManager(), 256, 256, Typeface.create(Typeface.DEFAULT, Typeface.BOLD), 32, Color.WHITE);
         this.mFont.load();
 
-
+        this.mPauseTextureAtlas.load();
         this.mGoalPostTopAtlas.load();
 		this.mGoalPostBottomAtlas.load();
         this.mBackgroundAtlas.load();
@@ -276,7 +286,7 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
 		goalPostTop = new Sprite(213, 0, this.mGPTTexture, this.getVertexBufferObjectManager());
 		goalPostBottom = new Sprite(213, CAMERA_HEIGHT-46, this.mGPBTexture, this.getVertexBufferObjectManager());
 		
-		pauseButton = new Sprite(CAMERA_WIDTH/2 - mCirclePuckTextureRegion.getWidth()/2, CAMERA_HEIGHT/2 - mCirclePuckTextureRegion.getWidth()/2, this.mCirclePuckTextureRegion, this.getVertexBufferObjectManager()) {
+		pauseButton = new Sprite(CAMERA_WIDTH/2 - mPauseTextureRegion.getWidth()/2, CAMERA_HEIGHT/2 - mPauseTextureRegion.getWidth()/2, this.mPauseTextureRegion, this.getVertexBufferObjectManager()) {
 
 	        @Override
 	        public boolean onAreaTouched(TouchEvent pSceneTouchEvent,
@@ -414,7 +424,7 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
             		goalTop = false;
             		mGoalTopText.setText(Integer.toString(goalTopCount)); //zmiana tekstu z wynikiem na aktualny
             		
-            		mGoalInfoTopText.setText("You Scored Sucker"); //zmiana tekstu z wynikiem na aktualny
+            		mGoalInfoTopText.setText("You Scored!"); //zmiana tekstu z wynikiem na aktualny
             		mGoalInfoTopText.setVisible(true);
             		
             			
@@ -434,7 +444,7 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
             		goalBottomCount++; //Zwiekszenie wyniku o 1
             		mGoalBottomText.setText(Integer.toString(goalBottomCount)); //zmiana tekstu z wynikiem na aktualny
             		
-            		mGoalInfoBottomText.setText("You Scored Sucker"); //zmiana tekstu z wynikiem na aktualny
+            		mGoalInfoBottomText.setText("You Scored!"); //zmiana tekstu z wynikiem na aktualny
             		mGoalInfoBottomText.setVisible(true);
 
             	}
@@ -452,6 +462,7 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
 	//MENU GRY uruchamiane po wcisnieciu przycisku PAUSE/Wstecz
 	public boolean onMenuItemClicked(final MenuScene pMenuScene, final IMenuItem pMenuItem, final float pMenuItemLocalX, final float pMenuItemLocalY) {
             switch(pMenuItem.getID()) {
+            
                     case MENU_RESET:
                     	
                     		final float angle = puckBody.getAngle(); 
@@ -478,6 +489,14 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
                             this.finish();
                             
                             return true;
+                            
+                    case MENU_RESUME:
+                        
+                    	 mEngine.setScene(mScene);
+                         currentScene = SceneType.GAME;
+                        
+                        return true;
+                        
                     default:
                             return false;
             }
@@ -486,11 +505,15 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
 	//Metoda do tworzenia Menu gry
     protected void createMenuScene() {
             this.mPauseScene = new MenuScene(camera);
+            
+            final SpriteMenuItem resumeMenuItem = new SpriteMenuItem(MENU_RESUME, this.mMenuResumeTextureRegion, this.getVertexBufferObjectManager());
+            resumeMenuItem.setBlendFunction(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
+            this.mPauseScene.addMenuItem(resumeMenuItem);
 
             final SpriteMenuItem resetMenuItem = new SpriteMenuItem(MENU_RESET, this.mMenuResetTextureRegion, this.getVertexBufferObjectManager());
             resetMenuItem.setBlendFunction(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
             this.mPauseScene.addMenuItem(resetMenuItem);
-
+       
             final SpriteMenuItem quitMenuItem = new SpriteMenuItem(MENU_QUIT, this.mMenuQuitTextureRegion, this.getVertexBufferObjectManager());
             quitMenuItem.setBlendFunction(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
             this.mPauseScene.addMenuItem(quitMenuItem);
