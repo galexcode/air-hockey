@@ -10,6 +10,8 @@ import org.andengine.audio.sound.SoundFactory;
 import org.andengine.engine.Engine;
 import org.andengine.engine.camera.Camera;
 import org.andengine.engine.handler.IUpdateHandler;
+import org.andengine.engine.handler.timer.ITimerCallback;
+import org.andengine.engine.handler.timer.TimerHandler;
 import org.andengine.engine.options.EngineOptions;
 import org.andengine.engine.options.ScreenOrientation;
 import org.andengine.engine.options.resolutionpolicy.RatioResolutionPolicy;
@@ -175,6 +177,9 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
 	private Sound puckBeaterSound;
 	private Sound puckWallSound;
 	private Sound goalSound;
+
+	private Text mGoalInfoTopText;
+	private Text mGoalInfoBottomText;
 	
 	protected static final int MENU_RESET = 0;
     protected static final int MENU_QUIT = MENU_RESET + 1;
@@ -318,9 +323,20 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
 		groundLeftBody = PhysicsFactory.createBoxBody(this.mPhysicsWorld, groundLeft, BodyType.StaticBody, WALL_FIXTURE_DEF);
 		groundRightBody =PhysicsFactory.createBoxBody(this.mPhysicsWorld, groundRight, BodyType.StaticBody, WALL_FIXTURE_DEF);
 		
+		
+		mGoalInfoTopText =new Text(CAMERA_WIDTH/2, 200, this.mFont, "0", 1000, new TextOptions(AutoWrap.LETTERS, 1600, HorizontalAlign.RIGHT, Text.LEADING_DEFAULT), this.getVertexBufferObjectManager());
+		mGoalInfoBottomText =new Text(CAMERA_WIDTH/2, CAMERA_HEIGHT - 200, this.mFont, "0", 1000, new TextOptions(AutoWrap.LETTERS, 1600, HorizontalAlign.LEFT, Text.LEADING_DEFAULT), this.getVertexBufferObjectManager());
+
 		mGoalBottomText = new Text(15, CAMERA_HEIGHT/2 +10, this.mFont, "0", 1000, new TextOptions(AutoWrap.LETTERS, 200, HorizontalAlign.CENTER, Text.LEADING_DEFAULT), this.getVertexBufferObjectManager());
 		mGoalTopText = new Text(CAMERA_WIDTH/2 +140, CAMERA_HEIGHT/2 -45, this.mFont, "0", 1000, new TextOptions(AutoWrap.LETTERS, 200, HorizontalAlign.CENTER, Text.LEADING_DEFAULT), this.getVertexBufferObjectManager());
 
+		mGoalInfoBottomText.setVisible(false);
+		mGoalInfoTopText.setVisible(false);
+		
+		mGoalInfoBottomText.setColor(org.andengine.util.color.Color.BLACK);
+		mGoalInfoTopText.setColor(org.andengine.util.color.Color.BLACK);
+		
+		mGoalInfoTopText.setRotation(180);
 		mGoalTopText.setRotation(180); //odwrocenie gornego napisu z wynikiem
 		
 		//Ukrywanie scian
@@ -343,6 +359,9 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
 		
 		this.mScene.attachChild(mGoalTopText); //wyswietlanie punktow dla gornego gracza
 		this.mScene.attachChild(mGoalBottomText); //wyswietlanie punktow dla dolnego gracza
+		this.mScene.attachChild(mGoalInfoBottomText);
+		this.mScene.attachChild(mGoalInfoTopText);
+		
 		this.mScene.attachChild(pauseButton);
 		this.mScene.attachChild(groundLeft); //dolna lewa sciana
 		this.mScene.attachChild(groundRight); //dolna prawa sciana 
@@ -378,6 +397,7 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
 		
 		//Nasluchiwanie na okreslone akcje w scenie
 		puck.registerUpdateHandler(new IUpdateHandler(){
+			
             @Override
             public void onUpdate(float pSecondsElapsed) {
             	
@@ -391,10 +411,13 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
             		Vector2Pool.recycle(v2);
             		
             		goalTopCount++; //Zwiekszenie wyniku o 1
-            		
             		goalTop = false;
             		mGoalTopText.setText(Integer.toString(goalTopCount)); //zmiana tekstu z wynikiem na aktualny
-
+            		
+            		mGoalInfoTopText.setText("You Scored Sucker"); //zmiana tekstu z wynikiem na aktualny
+            		mGoalInfoTopText.setVisible(true);
+            		
+            			
             		
             	}
             
@@ -409,8 +432,10 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
             		
             		goalBottom = false; 
             		goalBottomCount++; //Zwiekszenie wyniku o 1
-            		
             		mGoalBottomText.setText(Integer.toString(goalBottomCount)); //zmiana tekstu z wynikiem na aktualny
+            		
+            		mGoalInfoBottomText.setText("You Scored Sucker"); //zmiana tekstu z wynikiem na aktualny
+            		mGoalInfoBottomText.setVisible(true);
 
             	}
  
@@ -419,8 +444,7 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
             public void reset() {
             }
 		});
-		
-		
+
 
 		return this.mScene;
 	}
@@ -628,6 +652,8 @@ public class PlayMultiActivity extends SimpleBaseGameActivity implements IAccele
                        if (x2.getBody().equals(beaterBody) && x1.getBody().equals(puckBody))
                        {                                             
                     	   puckBeaterSound.play();
+                    	   mGoalInfoBottomText.setVisible(false);
+                    	   mGoalInfoTopText.setVisible(false);
                     	   Debug.d("Beater and Puck Contact");
                         	
                        }
